@@ -70,7 +70,7 @@ class check extends \phpbb\console\command\command
 		}
 		catch (\RuntimeException $e)
 		{
-			$output->writeln('<error>' . $this->user->lang('UPDATE_VERSIONCHECK_FAIL') . '</error>');
+			$output->writeln('<error>' . $this->user->lang('VERSIONCHECK_FAIL') . '</error>');
 
 			$updates_available = array();
 			return 2;
@@ -96,7 +96,7 @@ class check extends \phpbb\console\command\command
 		{
 			if ($input->getOption('verbose'))
 			{
-				$output->writeln($this->user->lang('YOUR_VERSION') . $this->config['version']);
+				$output->writeln($this->user->lang('CURRENT_VERSION') . $this->config['version']);
 				$output->writeln('<info>' . $this->user->lang('UPDATE_NOT_NEEDED') . '</info>');
 			}
 
