@@ -19,10 +19,14 @@ class check extends \phpbb\console\command\command
 	/** @var \phpbb\config\config */
 	protected $config;
 
-	public function __construct(\phpbb\user $user, \phpbb\config\config $config)
+	/** @var Symfony\Component\DependencyInjection\ContainerBuilder */
+	protected $phpbb_container;
+
+	public function __construct(\phpbb\user $user, \phpbb\config\config $config, Symfony\Component\DependencyInjection\ContainerBuilder $phpbb_container)
 	{
 		$this->user = $user;
 		$this->config = $config;
+		$this->phpbb_container = $phpbb_container;
 		$this->user->add_lang(array('acp/common'));
 		parent::__construct();
 	}
@@ -37,15 +41,10 @@ class check extends \phpbb\console\command\command
 
 	protected function execute(InputInterface $input, OutputInterface $output)
 	{
-		global $config, $user, $request;
-		global $phpbb_root_path, $phpEx, $phpbb_container;
-
-		$user->add_lang('install');
-
-		$version_helper = $phpbb_container->get('version_helper');
+		$version_helper = $this->phpbb_container->get('version_helper');
 		try
 		{
-			$recheck = $request->variable('versioncheck_force', false);
+			$recheck = true;
 			$updates_available = $version_helper->get_suggested_updates($recheck);
 		}
 		catch (\RuntimeException $e)
