@@ -22,7 +22,7 @@ class check extends \phpbb\console\command\command
 	/** @var Symfony\Component\DependencyInjection\ContainerBuilder */
 	protected $phpbb_container;
 
-	public function __construct(\phpbb\user $user, \phpbb\config\config $config, Symfony\Component\DependencyInjection\ContainerBuilder $phpbb_container)
+	public function __construct(\phpbb\user $user, \phpbb\config\config $config, \Symfony\Component\DependencyInjection\ContainerBuilder $phpbb_container)
 	{
 		$this->user = $user;
 		$this->config = $config;
@@ -35,7 +35,7 @@ class check extends \phpbb\console\command\command
 	{
 		$this
 			->setName('update:check')
-			->setDescription($this->user->lang('CLI_UPDATE_CHECK'))
+			->setDescription($this->user->lang('CLI_DESCRIPTION_UPDATE_CHECK'))
 		;
 	}
 
@@ -49,15 +49,15 @@ class check extends \phpbb\console\command\command
 		}
 		catch (\RuntimeException $e)
 		{
-			$output->writeln('S_VERSIONCHECK_FAIL');
+			$output->writeln($this->user->lang('S_VERSIONCHECK_FAIL'));
 
 			$updates_available = array();
 		}
 
 		if (!empty($updates_available))
 		{
-			$output->writeln('UPDATE_NEEDED');
-			$output->writeln('UPDATES_AVAILABLE');
+			$output->writeln($this->user->lang('UPDATE_NEEDED'));
+			$output->writeln($this->user->lang('UPDATES_AVAILABLE'));
 			foreach ($updates_available as $branch => $version_data)
 			{
 				$output->writeln($version_data);
@@ -65,7 +65,7 @@ class check extends \phpbb\console\command\command
 		}
 		else
 		{
-			$output->writeln('UPDATE_NOT_NEEDED');
+			$output->writeln($this->user->lang('UPDATE_NOT_NEEDED'));
 		}
 	}
 }
