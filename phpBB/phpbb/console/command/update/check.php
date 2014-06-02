@@ -22,6 +22,9 @@ class check extends \phpbb\console\command\command
 	/** @var Symfony\Component\DependencyInjection\ContainerBuilder */
 	protected $phpbb_container;
 
+	/**
+	* Construct method
+	*/
 	public function __construct(\phpbb\user $user, \phpbb\config\config $config, \Symfony\Component\DependencyInjection\ContainerBuilder $phpbb_container)
 	{
 		$this->user = $user;
@@ -31,6 +34,13 @@ class check extends \phpbb\console\command\command
 		parent::__construct();
 	}
 
+	/**
+	* Configures the service.
+	*
+	* Sets the name and description of the command.
+	*
+	* @return null
+	*/
 	protected function configure()
 	{
 		$this
@@ -39,6 +49,17 @@ class check extends \phpbb\console\command\command
 		;
 	}
 
+	/**
+	* Executes the command.
+	*
+	* Checks if an update is available.
+	* If at least one is available, a message is printed and if verbose mode is set the list of possible updates is printed.
+	* If their is none, nothing is printed unless verbose mode is set.
+	*
+	* @param InputInterface $input Input stream, used to get the options.
+	* @param OutputInterface $output Output stream, used to print messages.
+	* @return int 0 if the board is up to date, 1 if it is not and 2 if an error occured.
+	*/
 	protected function execute(InputInterface $input, OutputInterface $output)
 	{
 		$version_helper = $this->phpbb_container->get('version_helper');
@@ -49,23 +70,37 @@ class check extends \phpbb\console\command\command
 		}
 		catch (\RuntimeException $e)
 		{
-			$output->writeln($this->user->lang('S_VERSIONCHECK_FAIL'));
+			$output->writeln('<error>' . $this->user->lang('UPDATE_VERSIONCHECK_FAIL') . '</error>');
 
 			$updates_available = array();
+			return 2;
 		}
 
 		if (!empty($updates_available))
 		{
-			$output->writeln($this->user->lang('UPDATE_NEEDED'));
-			$output->writeln($this->user->lang('UPDATES_AVAILABLE'));
-			foreach ($updates_available as $branch => $version_data)
+			$output->writeln('<info>' . $this->user->lang('UPDATE_NEEDED') . '</info>');
+
+			if ($input->getOption('verbose'))
 			{
-				$output->writeln($version_data);
+				$output->writeln($this->user->lang('YOUR_VERSION') . $this->config['version']);
+				$output->writeln($this->user->lang('UPDATES_AVAILABLE'));
+				foreach ($updates_available as $branch => $version_data)
+				{
+					$output->writeln($version_data);
+				}
 			}
+
+			return 1;
 		}
 		else
 		{
-			$output->writeln($this->user->lang('UPDATE_NOT_NEEDED'));
+			if ($input->getOption('verbose'))
+			{
+				$output->writeln($this->user->lang('YOUR_VERSION') . $this->config['version']);
+				$output->writeln('<info>' . $this->user->lang('UPDATE_NOT_NEEDED') . '</info>');
+			}
+
+			return 0;
 		}
 	}
 }
