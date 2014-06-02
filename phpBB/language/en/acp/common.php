@@ -225,7 +225,7 @@ $lang = array_merge($lang, array(
 
 	'CLI_DESCRIPTION_CRON_RUN'				=> 'Runs all ready cron tasks.',
 	'CLI_DESCRIPTION_CRON_RUN_ARGUMENT_1'	=> 'Name of the task to be run',
-	'CLI_UPDATE_CHECK'		=> 'Check if the board is up to date.',
+	'CLI_DESCRIPTION_UPDATE_CHECK'		=> 'Check if the board is up to date.',
 
 	'COLOUR_SWATCH'			=> 'Web-safe colour swatch',
 	'CONFIG_UPDATED'		=> 'Configuration updated successfully.',
