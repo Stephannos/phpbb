@@ -1,9 +1,13 @@
 <?php
 /**
 *
-* @package mcp
-* @copyright (c) 2005 phpBB Group
-* @license http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
+* This file is part of the phpBB Forum Software package.
+*
+* @copyright (c) phpBB Limited <https://www.phpbb.com>
+* @license GNU General Public License, version 2 (GPL-2.0)
+*
+* For full copyright and license information, please see
+* the docs/CREDITS.txt file.
 *
 */
 
@@ -18,7 +22,6 @@ if (!defined('IN_PHPBB'))
 /**
 * mcp_main
 * Handling mcp actions
-* @package mcp
 */
 class mcp_main
 {
@@ -120,7 +123,7 @@ class mcp_main
 					trigger_error('NO_TOPIC_SELECTED');
 				}
 
-				mcp_delete_topic($topic_ids, $soft_delete, ($soft_delete) ? $request->variable('delete_reason', '', true) : '');
+				mcp_delete_topic($topic_ids, $soft_delete, $request->variable('delete_reason', '', true));
 			break;
 
 			case 'delete_post':
@@ -137,7 +140,7 @@ class mcp_main
 					trigger_error('NO_POST_SELECTED');
 				}
 
-				mcp_delete_post($post_ids, $soft_delete, ($soft_delete) ? $request->variable('delete_reason', '', true) : '');
+				mcp_delete_post($post_ids, $soft_delete, $request->variable('delete_reason', '', true));
 			break;
 
 			case 'restore_topic':
@@ -784,12 +787,12 @@ function mcp_delete_topic($topic_ids, $is_soft = false, $soft_delete_reason = ''
 					$return = $phpbb_content_visibility->set_topic_visibility(ITEM_DELETED, $topic_id, $row['forum_id'], $user->data['user_id'], time(), $soft_delete_reason);
 					if (!empty($return))
 					{
-						add_log('mod', $row['forum_id'], $topic_id, 'LOG_SOFTDELETE_TOPIC', $row['topic_title'], $row['topic_first_poster_name']);
+						add_log('mod', $row['forum_id'], $topic_id, 'LOG_SOFTDELETE_TOPIC', $row['topic_title'], $row['topic_first_poster_name'], $soft_delete_reason);
 					}
 				}
 				else
 				{
-					add_log('mod', $row['forum_id'], $topic_id, 'LOG_DELETE_TOPIC', $row['topic_title'], $row['topic_first_poster_name']);
+					add_log('mod', $row['forum_id'], $topic_id, 'LOG_DELETE_TOPIC', $row['topic_title'], $row['topic_first_poster_name'], $soft_delete_reason);
 				}
 			}
 		}
@@ -823,7 +826,6 @@ function mcp_delete_topic($topic_ids, $is_soft = false, $soft_delete_reason = ''
 			'S_TOPIC_MODE'			=> true,
 			'S_ALLOWED_DELETE'		=> $auth->acl_get('m_delete', $forum_id),
 			'S_ALLOWED_SOFTDELETE'	=> $auth->acl_get('m_softdelete', $forum_id),
-			'S_DELETE_REASON'		=> $auth->acl_get('m_softdelete', $forum_id),
 		));
 
 		$l_confirm = (sizeof($topic_ids) == 1) ? 'DELETE_TOPIC' : 'DELETE_TOPICS';
@@ -944,7 +946,7 @@ function mcp_delete_post($post_ids, $is_soft = false, $soft_delete_reason = '', 
 		foreach ($approve_log as $row)
 		{
 			$post_username = ($row['poster_id'] == ANONYMOUS && !empty($row['post_username'])) ? $row['post_username'] : $row['username'];
-			add_log('mod', $row['forum_id'], $row['topic_id'], 'LOG_SOFTDELETE_POST', $row['post_subject'], $post_username);
+			add_log('mod', $row['forum_id'], $row['topic_id'], 'LOG_SOFTDELETE_POST', $row['post_subject'], $post_username, $soft_delete_reason);
 		}
 
 		$topic_id = $request->variable('t', 0);
@@ -987,7 +989,7 @@ function mcp_delete_post($post_ids, $is_soft = false, $soft_delete_reason = '', 
 		foreach ($post_data as $id => $row)
 		{
 			$post_username = ($row['poster_id'] == ANONYMOUS && !empty($row['post_username'])) ? $row['post_username'] : $row['username'];
-			add_log('mod', $row['forum_id'], $row['topic_id'], 'LOG_DELETE_POST', $row['post_subject'], $post_username);
+			add_log('mod', $row['forum_id'], $row['topic_id'], 'LOG_DELETE_POST', $row['post_subject'], $post_username, $soft_delete_reason);
 		}
 
 		// Now delete the posts, topics and forums are automatically resync'ed
@@ -1060,7 +1062,6 @@ function mcp_delete_post($post_ids, $is_soft = false, $soft_delete_reason = '', 
 			'S_SOFTDELETED'			=> $only_softdeleted,
 			'S_ALLOWED_DELETE'		=> $auth->acl_get('m_delete', $forum_id),
 			'S_ALLOWED_SOFTDELETE'	=> $auth->acl_get('m_softdelete', $forum_id),
-			'S_DELETE_REASON'		=> $auth->acl_get('m_softdelete', $forum_id),
 		));
 
 		$l_confirm = (sizeof($post_ids) == 1) ? 'DELETE_POST' : 'DELETE_POSTS';

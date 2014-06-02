@@ -1,9 +1,13 @@
 <?php
 /**
 *
-* @package testing
-* @copyright (c) 2011 phpBB Group
-* @license http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
+* This file is part of the phpBB Forum Software package.
+*
+* @copyright (c) phpBB Limited <https://www.phpbb.com>
+* @license GNU General Public License, version 2 (GPL-2.0)
+*
+* For full copyright and license information, please see
+* the docs/CREDITS.txt file.
 *
 */
 
@@ -97,6 +101,7 @@ class phpbb_extension_manager_test extends phpbb_database_test_case
 		$phpbb_root_path = __DIR__ . './../../phpBB/';
 		$php_ext = 'php';
 		$table_prefix = 'phpbb_';
+		$user = new \phpbb\user();
 
 		$migrator = new \phpbb\db\migrator(
 			$config,
@@ -117,6 +122,7 @@ class phpbb_extension_manager_test extends phpbb_database_test_case
 			$db,
 			$config,
 			new \phpbb\filesystem(),
+			$user,
 			'phpbb_ext',
 			dirname(__FILE__) . '/',
 			$php_ext,

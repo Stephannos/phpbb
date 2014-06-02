@@ -1,9 +1,13 @@
 <?php
 /**
 *
-* @package acp
-* @copyright (c) 2005 phpBB Group
-* @license http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
+* This file is part of the phpBB Forum Software package.
+*
+* @copyright (c) phpBB Limited <https://www.phpbb.com>
+* @license GNU General Public License, version 2 (GPL-2.0)
+*
+* For full copyright and license information, please see
+* the docs/CREDITS.txt file.
 *
 */
 
@@ -15,9 +19,6 @@ if (!defined('IN_PHPBB'))
 	exit;
 }
 
-/**
-* @package acp
-*/
 class acp_logs
 {
 	var $u_action;
@@ -53,7 +54,7 @@ class acp_logs
 		{
 			if (confirm_box(true))
 			{
-				$where_sql = '';
+				$conditions = array();
 
 				if ($deletemark && sizeof($marked))
 				{
@@ -62,19 +63,25 @@ class acp_logs
 					{
 						$sql_in[] = $mark;
 					}
-					$where_sql = ' AND ' . $db->sql_in_set('log_id', $sql_in);
+					$conditions['log_id'] = $sql_in;
 					unset($sql_in);
 				}
 
-				if ($where_sql || $deleteall)
+				if ($deleteall)
 				{
-					$sql = 'DELETE FROM ' . LOG_TABLE . "
-						WHERE log_type = {$this->log_type}
-						$where_sql";
-					$db->sql_query($sql);
+					if ($sort_days)
+					{
+						$conditions['log_time'] = array('>=', time() - ($sort_days * 86400));
+					}
 
-					add_log('admin', 'LOG_CLEAR_' . strtoupper($mode));
+					$keywords = utf8_normalize_nfc(request_var('keywords', '', true));
+					$conditions['keywords'] = $keywords;
 				}
+
+				$conditions['log_type'] = $this->log_type;
+
+				$phpbb_log = $phpbb_container->get('log');
+				$phpbb_log->delete($mode, $conditions);
 			}
 			else
 			{

@@ -1,9 +1,13 @@
 <?php
 /**
 *
-* @package testing
-* @copyright (c) 2011 phpBB Group
-* @license http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
+* This file is part of the phpBB Forum Software package.
+*
+* @copyright (c) phpBB Limited <https://www.phpbb.com>
+* @license GNU General Public License, version 2 (GPL-2.0)
+*
+* For full copyright and license information, please see
+* the docs/CREDITS.txt file.
 *
 */
 require_once dirname(__FILE__) . '/../../phpBB/includes/functions.php';
@@ -122,6 +126,22 @@ class phpbb_extension_finder_test extends phpbb_test_case
 		sort($classes);
 		$this->assertEquals(
 			array(
+				'\vendor2\foo\type\alternative',
+			),
+			$classes
+		);
+	}
+
+	public function test_non_absolute_directory_get_classes()
+	{
+		$classes = $this->finder
+			->directory('type/')
+			->get_classes();
+
+		sort($classes);
+		$this->assertEquals(
+			array(
+				'\vendor2\foo\sub\type\alternative',
 				'\vendor2\foo\type\alternative',
 			),
 			$classes

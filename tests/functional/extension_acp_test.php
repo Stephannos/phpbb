@@ -1,9 +1,13 @@
 <?php
 /**
 *
-* @package testing
-* @copyright (c) 2011 phpBB Group
-* @license http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
+* This file is part of the phpBB Forum Software package.
+*
+* @copyright (c) phpBB Limited <https://www.phpbb.com>
+* @license GNU General Public License, version 2 (GPL-2.0)
+*
+* For full copyright and license information, please see
+* the docs/CREDITS.txt file.
 *
 */
 
@@ -176,7 +180,7 @@ class phpbb_functional_extension_acp_test extends phpbb_functional_test_case
 	{
 		// test2 is not available (error)
 		$crawler = self::request('GET', 'adm/index.php?i=acp_extensions&mode=main&action=delete_data_pre&ext_name=test2&sid=' . $this->sid);
-		$this->assertContains('The required file does not exist', $crawler->filter('.errorbox')->text());
+		$this->assertContains($this->lang('FILE_NOT_FOUND', ''), $crawler->filter('.errorbox')->text());
 
 		// foo is not disabled (redirect to list)
 		$crawler = self::request('GET', 'adm/index.php?i=acp_extensions&mode=main&action=delete_data_pre&ext_name=vendor2%2Ffoo&sid=' . $this->sid);

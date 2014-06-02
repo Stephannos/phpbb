@@ -1,9 +1,13 @@
 <?php
 /**
 *
-* @package \phpbb\log\log
-* @copyright (c) 2012 phpBB Group
-* @license http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
+* This file is part of the phpBB Forum Software package.
+*
+* @copyright (c) phpBB Limited <https://www.phpbb.com>
+* @license GNU General Public License, version 2 (GPL-2.0)
+*
+* For full copyright and license information, please see
+* the docs/CREDITS.txt file.
 *
 */
 
@@ -11,8 +15,6 @@ namespace phpbb\log;
 
 /**
 * The interface for the log-system.
-*
-* @package \phpbb\log\log
 */
 interface log_interface
 {
@@ -65,6 +67,18 @@ interface log_interface
 	* @return	int|bool		Returns the log_id, if the entry was added to the database, false otherwise.
 	*/
 	public function add($mode, $user_id, $log_ip, $log_operation, $log_time = false, $additional_data = array());
+
+	/**
+	* Delete entries in the logs
+	*
+	* @param 	string	$mode		The mode defines which log_type is used and from which log the entries are deleted
+	* @param 	array	$conditions	An array of conditions, 3 different  forms are accepted
+	* 								1) <key> => <value> transformed into 'AND <key> = <value>' (value should be an integer)
+	*								2) <key> => array(<operator>, <value>) transformed into 'AND <key> <operator> <value>' (values can't be an array)
+	*								3) <key> => array('IN' => array(<values>)) transformed into 'AND <key> IN <values>'
+	*								A special field, keywords, can also be defined. In this case only the log entries that have the keywords in log_operation or log_data will be deleted.
+	*/
+	public function delete($mode, $conditions = array());
 
 	/**
 	* Grab the logs from the database

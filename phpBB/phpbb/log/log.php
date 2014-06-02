@@ -1,9 +1,13 @@
 <?php
 /**
 *
-* @package \phpbb\log\log
-* @copyright (c) 2012 phpBB Group
-* @license http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
+* This file is part of the phpBB Forum Software package.
+*
+* @copyright (c) phpBB Limited <https://www.phpbb.com>
+* @license GNU General Public License, version 2 (GPL-2.0)
+*
+* For full copyright and license information, please see
+* the docs/CREDITS.txt file.
 *
 */
 
@@ -11,8 +15,6 @@ namespace phpbb\log;
 
 /**
 * This class is used to add entries into the log table.
-*
-* @package \phpbb\log\log
 */
 class log implements \phpbb\log\log_interface
 {
@@ -330,6 +332,98 @@ class log implements \phpbb\log\log_interface
 	}
 
 	/**
+	* {@inheritDoc}
+	*/
+	public function delete($mode, $conditions = array())
+	{
+		switch ($mode)
+		{
+			case 'admin':
+				$log_type = LOG_ADMIN;
+				break;
+
+			case 'mod':
+				$log_type = LOG_MOD;
+				break;
+
+			case 'user':
+				$log_type = LOG_USERS;
+				break;
+
+			case 'users':
+				$log_type = LOG_USERS;
+				break;
+
+			case 'critical':
+				$log_type = LOG_CRITICAL;
+				break;
+
+			default:
+				$log_type = false;
+		}
+
+		/**
+		* Allows to modify log data before we delete it from the database
+		*
+		* NOTE: if sql_ary does not contain a log_type value, the entry will
+		* not be deleted in the database. So ensure to set it, if needed.
+		*
+		* @event core.delete_log
+		* @var	string	mode			Mode of the entry we log
+		* @var	string	log_type		Type ID of the log (should be different than false)
+		* @var	array	conditions		An array of conditions, 3 different  forms are accepted
+		* 								1) <key> => <value> transformed into 'AND <key> = <value>' (value should be an integer)
+		*								2) <key> => array(<operator>, <value>) transformed into 'AND <key> <operator> <value>' (values can't be an array)
+		*								3) <key> => array('IN' => array(<values>)) transformed into 'AND <key> IN <values>'
+		*								A special field, keywords, can also be defined. In this case only the log entries that have the keywords in log_operation or log_data will be deleted.
+		* @since 3.1.0-b4
+		*/
+		$vars = array(
+			'mode',
+			'log_type',
+			'conditions',
+		);
+		extract($this->dispatcher->trigger_event('core.delete_log', compact($vars)));
+
+		if ($log_type === false)
+		{
+			return;
+		}
+
+		$sql_where = 'WHERE log_type = ' . $log_type;
+		foreach ($conditions as $field => $field_value)
+		{
+			$sql_where .= ' AND ';
+
+			if ($field == 'keywords')
+			{
+				$sql_where .= $this->generate_sql_keyword($field_value, '', '');
+			}
+			else
+			{
+				if (is_array($field_value) && sizeof($field_value) == 2 && !is_array($field_value[1]))
+				{
+					$sql_where .= $field . ' ' . $field_value[0] . ' ' . $field_value[1];
+				}
+				else if (is_array($field_value) && isset($field_value['IN']) && is_array($field_value['IN']))
+				{
+					$sql_where .= $this->db->sql_in_set($field, $field_value['IN']);
+				}
+				else
+				{
+					$sql_where .= $field . ' = ' . $field_value;
+				}
+			}
+		}
+
+		$sql = 'DELETE FROM ' . LOG_TABLE . "
+					$sql_where";
+		$this->db->sql_query($sql);
+
+		$this->add('admin', $this->user->data['user_id'], $this->user->ip, 'LOG_CLEAR_' . strtoupper($mode));
+	}
+
+	/**
 	* Grab the logs from the database
 	*
 	* {@inheritDoc}
@@ -636,11 +730,13 @@ class log implements \phpbb\log\log_interface
 	/**
 	* Generates a sql condition for the specified keywords
 	*
-	* @param	string	$keywords	The keywords the user specified to search for
+	* @param	string	$keywords			The keywords the user specified to search for
+	* @param	string	$table_alias		The alias of the logs' table ('l.' by default)
+	* @param	string	$statement_operator	The operator used to prefix the statement ('AND' by default)
 	*
 	* @return	string		Returns the SQL condition searching for the keywords
 	*/
-	protected function generate_sql_keyword($keywords)
+	protected function generate_sql_keyword($keywords, $table_alias = 'l.', $statement_operator = 'AND')
 	{
 		// Use no preg_quote for $keywords because this would lead to sole
 		// backslashes being added. We also use an OR connection here for
@@ -685,12 +781,12 @@ class log implements \phpbb\log\log_interface
 				}
 			}
 
-			$sql_keywords = 'AND (';
+			$sql_keywords = $statement_operator . ' (';
 			if (!empty($operations))
 			{
-				$sql_keywords .= $this->db->sql_in_set('l.log_operation', $operations) . ' OR ';
+				$sql_keywords .= $this->db->sql_in_set($table_alias . 'log_operation', $operations) . ' OR ';
 			}
-			$sql_lower = $this->db->sql_lower_text('l.log_data');
+			$sql_lower = $this->db->sql_lower_text($table_alias . 'log_data');
 			$sql_keywords .= " $sql_lower " . implode(" OR $sql_lower ", $keywords) . ')';
 		}
 
