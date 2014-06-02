@@ -311,10 +311,7 @@ $lang = array_merge($lang, array(
 
 	'UPDATE_NEEDED'			=> 'The board is not up to date.',
 	'UPDATE_NOT_NEEDED'		=> 'The board is up to date.',
-	'UPDATE_VERSIONCHECK_FAIL'		=> 'The version check failed.',
 	'UPDATES_AVAILABLE'		=> 'Updates available:',
-
-	'YOUR_VERSION'			=> 'Your version: ',
 
 	'WARNING'				=> 'Warning',
 ));
